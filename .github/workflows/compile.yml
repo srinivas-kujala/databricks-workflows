@@ -1,0 +1,51 @@
+name: Compile
+# Compile based on the input parameters
+# Reference https://github.com/marketplace/actions/run-databricks-notebook
+
+on:
+  workflow_call:
+    inputs:
+      branch-name:  # id of input
+        type: string
+        description: 'Name of the repository branch. Ex: feature/12345_Title-Of-Ticket'
+        required: true
+      environment:  # id of input
+        type: string
+        description: 'Deployment environment'
+        required: true
+    secrets:
+      DATABRIKS_HOST:  # id of input
+        description: 'Azure data bricks host'
+      DATABRIKS_TOKEN:  # id of input
+        description: 'Azure data bricks host token'
+        
+jobs:
+ 
+  execution-steps:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          ref: ${{ inputs.branch-name }}
+            
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v5.6.0
+
+      - name: Build wheel
+        id: build-wheel
+        run: |
+          python setup.py bdist_wheel
+        shell: sh
+    
+      # Uploads local file (Python wheel) to temporary Databricks DBFS
+      # path and returns path. See https://github.com/databricks/upload-dbfs-tempfile for details.
+      - name: Upload Wheel
+        id: upload-wheel
+        uses: databricks/upload-dbfs-temp@v0
+        with:
+          local-path: dist/my-project.whl
