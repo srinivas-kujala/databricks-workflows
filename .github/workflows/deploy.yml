@@ -1,0 +1,36 @@
+name: Deploy
+# Deploy based on the input parameters
+
+on:
+  workflow_call:
+    inputs:
+      branch-name:  # id of input
+        type: string
+        description: 'Name of the repository branch. Ex: feature/12345_Title-Of-Ticket'
+        required: true
+      environment:  # id of input
+        type: string
+        description: 'Deployment environment'
+        required: true
+    secrets:
+      DATABRIKS_HOST:  # id of input
+        description: 'Azure data bricks host'
+      DATABRIKS_TOKEN:  # id of input
+        description: 'Azure data bricks host token'
+
+jobs:
+ 
+  execution-steps:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          ref: ${{ inputs.branch-name }}
+            
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v5.6.0
